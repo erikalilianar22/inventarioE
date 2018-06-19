@@ -8,7 +8,9 @@ package dao;
 import conexion.Conexion;
 import interfaces.metodos;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,10 +18,10 @@ import modelo.Filtro;
 
 /**
  *
- * @author LN710Q
+ * @author ERIKA
  */
 public class FiltroDao implements metodos<Filtro> {
-
+//CREANDO NUESTRA QUERYS
     private static final String SQL_INSERT = "INSERT INTO filtros_aceite(codFiltro, marca, stock, existencia) VALUES (?,?,?,?)";
     private static final String SQL_UPDATE = "UPDATE filtros_aceite SET marca=?, stock=?, exitencia=? WHERE codFiltro=?";
     private static final String SQL_DELETE = "DELETE FROM filtros_aceite WHERE codFiltros=?";
@@ -28,7 +30,7 @@ public class FiltroDao implements metodos<Filtro> {
     private static final Conexion con = Conexion.conectar();
 
     @Override
-    public boolean create(Filtro g) {
+    public boolean create(Filtro g) {// NOS SERVIRA PAA PREPARAR LA CONSULTA DE INSERT
         PreparedStatement ps;
         try {
             ps = con.getCnx().prepareStatement(SQL_INSERT);
@@ -50,7 +52,7 @@ public class FiltroDao implements metodos<Filtro> {
 
     @Override
     public boolean delete(Object key) {
-        preparedStatement ps;
+        PreparedStatement ps;
         try {
             ps = con.getCnx().prepareStatement(SQL_DELETE);
             ps.setString(1, key.toString());
@@ -97,23 +99,40 @@ public class FiltroDao implements metodos<Filtro> {
         
         try{
             ps= con.getCnx().clientPrepareStatement(SQL_READ);
-            ps.setString(1, key.tosString());
+            ps.setString(1, key.toString());
             
             rs=ps.executeQuery();
             
             while(rs.next()){
-                f= new Filtro(rs.getInt(l),rs.getString(2),rs.getString(3),rs.getInt(4), rs.getBoolean(5));   
+                f= new Filtro(rs.getInt(1),rs.getString(2),rs.getString(3),rs.getInt(4), rs.getBoolean(5));   
             }
             rs.close();
         }
         catch(SQLException ex){
             System.out.println(ex.getMessage());
+            Logger.getLogger(FiltroDao.class.getName()).log(Level.SEVERE, null, ex);
+        }finally{
+            con.cerrarConexion();
         }
+        return f;
     }
 
     @Override
     public ArrayList<Filtro> readAll() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ArrayList<Filtro> all =new ArrayList();
+        Statement s;
+        ResultSet rs;
+        try{
+            s= con.getCnx().clientPrepareStatement(SQL_READALL);
+            rs=s.executeQuery(SQL_READALL);
+            while(rs.next()){
+                all.add(new Filtro(rs.getInt(1), rs.getString(2),rs.getString(3),rs.getInt(4),rs.getBoolean(5)));
+            }
+            rs.close();
+        }catch(SQLException ex){
+            Logger.getLogger(FiltroDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return all;
     }
 }   
 
